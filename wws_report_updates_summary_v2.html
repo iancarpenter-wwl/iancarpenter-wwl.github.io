@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WWS Report Updates Summary</title>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+:root {
+  --brand: #00bc98;
+  --gray-900: #343741;
+  --gray-700: #595e66;
+  --gray-500: #aeafb3;
+  --gray-100: #efeff0;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #555;
+  --danger-bg: #fee2e2;
+  --badge-bg: #e5e7eb;
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+}
+
+.header {
+  background: var(--brand);
+  color: #fff;
+  padding: 12px 18px;
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.18);
+  border: 1px dashed rgba(255,255,255,0.65);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-placeholder {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.9);
+  user-select: none;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 650;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.header-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 { margin: 0 0 12px 0; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+textarea, input {
+  width: 100%;
+  padding: 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+}
+
+textarea { min-height: 220px; }
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.badge {
+  background: var(--badge-bg);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.badge.danger { background: var(--danger-bg); }
+
+.row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary { background: var(--brand); color: #fff; }
+.btn-primary:hover { background: #00a985; }
+.btn-gray { background: var(--gray-900); color: #fff; }
+.btn-gray:hover { background: #2b2e36; }
+.btn-gray-700 { background: var(--gray-700); color: #fff; }
+.btn-gray-700:hover { background: #4f545b; }
+.btn-gray-500 { background: var(--gray-500); color: #111827; }
+.btn-gray-500:hover { background: #9ea0a4; }
+.btn-gray-100 { background: var(--gray-100); color: #111827; border-color: #d1d5db; }
+.btn-gray-100:hover { background: #e3e4e6; }
+
+.tabs { margin-top: 10px; }
+.tab-buttons { display: flex; gap: 6px; margin-bottom: 6px; }
+.tab-buttons button { padding: 6px 10px; }
+.hidden { display: none; }
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.logo svg { width: 100%; height: 100%; }
+
+.status {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #1f2937;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.status.error { background: #fee2e2; color: #7f1d1d; }
+
+.summary-wrap {
+  overflow: auto;
+  max-height: 520px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+table.preview {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+table.preview th,
+table.preview td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+table.preview th {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  z-index: 1;
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.swatch {
+  width: 18px;
+  height: 18px;
+  border: 1px solid #9ca3af;
+  border-radius: 4px;
+  flex: 0 0 auto;
+}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+		<div class="logo" aria-label="Logo">
+			<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 226.8092 200">
+			  <defs>
+				<style>
+				  .cls-1 {
+					fill: #fff;
+				  }
+				</style>
+			  </defs>
+			  <path class="cls-1" d="M103.952,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5591c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174c.0803-.2248,.0723-.4014,.0241-.554Z"/>
+			  <path class="cls-1" d="M150.4292,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5511c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174c.0803-.2168,.0723-.3934,.0241-.5459Z"/>
+			  <path class="cls-1" d="M161.7333,56.2927c-4.3354,0-7.868,3.5326-7.868,7.868s3.5326,7.868,7.868,7.868,7.868-3.5326,7.868-7.868-3.5326-7.868-7.868-7.868m0,22.0704c-7.8278,0-14.2025-6.3666-14.2025-14.2025,0-7.8278,6.3666-14.2025,14.2025-14.2025,7.8278,0,14.1944,6.3666,14.1944,14.2025,.008,7.8278-6.3666,14.2025-14.1944,14.2025"/>
+			</svg>
+      </div>
+      <div>
+        <p class="header-title">WWS Report Updates Summary</p>
+        <p class="header-subtitle">Compare two CSV reports and generate a highlighted Excel workbook.</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card">
+        <h1>Input Reports</h1>
+        <div class="hint">Select the older report and newer report CSV files. Matching priority: CustomerID, then NissanID, then Nissan Conf#.</div>
+        <label for="oldFile"><strong>Old Report CSV</strong></label>
+        <input id="oldFile" type="file" accept=".csv,text/csv" />
+        <br><br>
+        <label for="newFile"><strong>New Report CSV</strong></label>
+        <input id="newFile" type="file" accept=".csv,text/csv" />
+        <div class="row">
+          <button id="processBtn" class="btn-primary">Generate Workbook</button>
+          <button id="copyBtn" class="btn-gray-100" disabled>Copy Summary Text</button>
+          <button id="clearBtn" class="btn-gray-700">Clear</button>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="swatch" style="background:#fff2cc"></span>Yellow: populated value changed to different populated value</div>
+          <div class="legend-item"><span class="swatch" style="background:#c6efce"></span>Green: blank to populated</div>
+          <div class="legend-item"><span class="swatch" style="background:#ffc7ce"></span>Red: populated to blank</div>
+          <div class="legend-item"><span class="swatch" style="background:#9dc3e6"></span>Blue: numeric increase in Submitted/OEM or Cost</div>
+          <div class="legend-item"><span class="swatch" style="background:#f4b183"></span>Orange: numeric decrease in Submitted/OEM or Cost</div>
+        </div>
+        <div id="status" class="status hidden"></div>
+      </section>
+
+      <section class="card">
+        <h1>Run Stats</h1>
+        <div class="stats">
+          <span class="badge" id="oldRows">Old rows: 0</span>
+          <span class="badge" id="newRows">New rows: 0</span>
+          <span class="badge" id="changedRows">Changed rows: 0</span>
+          <span class="badge" id="changedCells">Changed cells: 0</span>
+          <span class="badge" id="unmatchedRows">New unmatched rows: 0</span>
+        </div>
+        <div class="hint">Updated Data includes only New Report rows with at least one difference versus the matched Old Report row.</div>
+        <textarea id="summaryText" readonly placeholder="Summary text will appear here after processing."></textarea>
+      </section>
+    </div>
+
+    <section class="card tabs">
+      <h1>Summary Preview</h1>
+      <div class="summary-wrap">
+        <table class="preview" id="summaryTable">
+          <thead>
+            <tr>
+              <th>Column</th>
+              <th>New Cell</th>
+              <th>Match Key</th>
+              <th>Old Value</th>
+              <th>New Value</th>
+              <th>Change Type</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+<script>
+'use strict';
+
+const EXPECTED_HEADERS = [
+  'CustomerID', 'NissanID', 'Nissan Conf#', 'OEM', 'Model', 'Trim', 'Color', 'LU Type', 'Upfitting Location',
+  'Submitted to OEM (Binary)', 'OEM Estimated Build Date', 'VIN', 'Delivered to Upfitting Yard',
+  'Expected Upfit Start Date', 'Date Shipped from WWS', 'Upfit Completion Date', 'Vehicle Delivery Date',
+  'PRIORITY?', 'Cost of Upfit', 'Upfit Quote Number (Excluding WSS Box)'
+];
+
+const KEY_PRIORITY = [
+  { columnName: 'CustomerID', columnIndex: 0 },
+  { columnName: 'NissanID', columnIndex: 1 },
+  { columnName: 'Nissan Conf#', columnIndex: 2 }
+];
+
+const NUMERIC_COLUMNS = new Set(['Submitted to OEM (Binary)', 'Cost of Upfit']);
+
+const COLORS = {
+  yellow: 'FFF2CC',
+  green: 'C6EFCE',
+  red: 'FFC7CE',
+  blue: '9DC3E6',
+  orange: 'F4B183',
+  tableHeader: 'E5E7EB'
+};
+
+let lastSummaryText = '';
+const $ = id => document.getElementById(id);
+
+$('processBtn').addEventListener('click', processReports);
+$('copyBtn').addEventListener('click', copySummaryText);
+$('clearBtn').addEventListener('click', clearAll);
+
+function showStatus(message, isError = false) {
+  const el = $('status');
+  el.textContent = message;
+  el.classList.remove('hidden');
+  el.classList.toggle('error', isError);
+}
+
+function clearAll() {
+  $('oldFile').value = '';
+  $('newFile').value = '';
+  $('summaryText').value = '';
+  $('summaryTable').querySelector('tbody').innerHTML = '';
+  $('copyBtn').disabled = true;
+  $('oldRows').textContent = 'Old rows: 0';
+  $('newRows').textContent = 'New rows: 0';
+  $('changedRows').textContent = 'Changed rows: 0';
+  $('changedCells').textContent = 'Changed cells: 0';
+  $('unmatchedRows').textContent = 'New unmatched rows: 0';
+  $('status').classList.add('hidden');
+  lastSummaryText = '';
+}
+
+async function processReports() {
+  try {
+    const oldFile = $('oldFile').files[0];
+    const newFile = $('newFile').files[0];
+
+    if (!oldFile || !newFile) {
+      showStatus('Select both Old Report and New Report CSV files.', true);
+      return;
+    }
+
+    if (!window.ExcelJS) {
+      showStatus('ExcelJS did not load. Check internet access to the CDN script, then reload this page.', true);
+      return;
+    }
+
+    showStatus('Processing...');
+    $('processBtn').disabled = true;
+    $('copyBtn').disabled = true;
+
+    const [oldText, newText] = await Promise.all([readFileAsText(oldFile), readFileAsText(newFile)]);
+    const oldRowsRaw = parseCsv(oldText);
+    const newRowsRaw = parseCsv(newText);
+
+    if (oldRowsRaw.length < 1 || newRowsRaw.length < 1) throw new Error('One or both CSV files are empty.');
+
+    validateHeaders(normalizeHeaders(oldRowsRaw[0]), 'Old Report');
+    validateHeaders(normalizeHeaders(newRowsRaw[0]), 'New Report');
+
+    const oldData = normalizeDataRows(oldRowsRaw.slice(1));
+    const newData = normalizeDataRows(newRowsRaw.slice(1));
+    const results = compareReports(oldData, newData);
+
+    $('oldRows').textContent = `Old rows: ${oldData.length}`;
+    $('newRows').textContent = `New rows: ${newData.length}`;
+    $('changedRows').textContent = `Changed rows: ${results.changedRows.length}`;
+    $('changedCells').textContent = `Changed cells: ${results.summaryRows.length}`;
+    $('unmatchedRows').textContent = `New unmatched rows: ${results.unmatchedNewRows}`;
+
+    lastSummaryText = buildSummaryText(results.summaryRows);
+    $('summaryText').value = lastSummaryText;
+    renderSummaryTable(results.summaryRows);
+    $('copyBtn').disabled = results.summaryRows.length === 0;
+
+    await buildWorkbook(results, newFile.name);
+
+    showStatus(results.summaryRows.length === 0
+      ? 'Workbook generated. No cell changes were found.'
+      : 'Workbook generated and downloaded. Summary is available below.');
+  } catch (err) {
+    showStatus(err.message || String(err), true);
+  } finally {
+    $('processBtn').disabled = false;
+  }
+}
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(reader.error || new Error('Unable to read file.'));
+    reader.readAsText(file);
+  });
+}
+
+function parseCsv(text) {
+  text = text.replace(/^\uFEFF/, '');
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const n = text[i + 1];
+
+    if (inQuotes) {
+      if (c === '"' && n === '"') { field += '"'; i++; }
+      else if (c === '"') inQuotes = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\r') continue;
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+  }
+
+  row.push(field);
+  rows.push(row);
+  return rows.filter(r => r.some(v => String(v ?? '').trim() !== ''));
+}
+
+function normalizeHeaders(headers) {
+  return EXPECTED_HEADERS.map((_, i) => String(headers[i] ?? '').trim());
+}
+
+function validateHeaders(headers, reportName) {
+  const mismatches = [];
+  EXPECTED_HEADERS.forEach((h, i) => {
+    if ((headers[i] || '') !== h) mismatches.push(`${columnLetter(i + 1)} expected "${h}" but found "${headers[i] || ''}"`);
+  });
+  if (mismatches.length) throw new Error(`${reportName} header mismatch:\n` + mismatches.join('\n'));
+}
+
+function normalizeDataRows(rows) {
+  return rows.map(row => EXPECTED_HEADERS.map((_, i) => String(row[i] ?? '')));
+}
+
+function getPreferredKey(row, rowIndex) {
+  for (const k of KEY_PRIORITY) {
+    const value = String(row[k.columnIndex] ?? '').trim();
+    if (value) return { key: `${k.columnName}::${value.toUpperCase()}`, label: `${k.columnName}: ${value}`, columnName: k.columnName, value };
+  }
+  return { key: `__NO_KEY_ROW_${rowIndex}`, label: `No key; row fallback ${rowIndex + 2}`, columnName: 'None', value: '' };
+}
+
+function buildOldIndex(oldData) {
+  const index = new Map();
+  oldData.forEach((row, rowIndex) => {
+    const keyInfo = getPreferredKey(row, rowIndex);
+    if (!index.has(keyInfo.key)) index.set(keyInfo.key, []);
+    index.get(keyInfo.key).push({ row, rowIndex, keyInfo, used: false });
+  });
+  return index;
+}
+
+function takeOldMatch(oldIndex, newRow, newRowIndex) {
+  const keyInfo = getPreferredKey(newRow, newRowIndex);
+  const matches = oldIndex.get(keyInfo.key) || [];
+  const match = matches.find(m => !m.used) || matches[0] || null;
+  if (match) match.used = true;
+  return { keyInfo, oldMatch: match };
+}
+
+function compareReports(oldData, newData) {
+  const oldIndex = buildOldIndex(oldData);
+  const changedRows = [];
+  const changeMap = new Map();
+  const summaryRows = [];
+  let unmatchedNewRows = 0;
+
+  for (let newRowIndex = 0; newRowIndex < newData.length; newRowIndex++) {
+    const newRow = newData[newRowIndex];
+    const { keyInfo, oldMatch } = takeOldMatch(oldIndex, newRow, newRowIndex);
+    const oldRow = oldMatch ? oldMatch.row : emptyDataRow();
+    const oldRowIndex = oldMatch ? oldMatch.rowIndex : null;
+    if (!oldMatch) unmatchedNewRows++;
+
+    let rowChanged = false;
+    const rowChanges = [];
+
+    for (let c = 0; c < EXPECTED_HEADERS.length; c++) {
+      const colName = EXPECTED_HEADERS[c];
+      const oldValue = oldRow[c] ?? '';
+      const newValue = newRow[c] ?? '';
+      if (sameCellValue(oldValue, newValue)) continue;
+
+      rowChanged = true;
+      const classification = classifyChange(oldValue, newValue, colName);
+      const newExcelRow = newRowIndex + 2;
+      const oldExcelRow = oldRowIndex === null ? null : oldRowIndex + 2;
+      const excelCol = c + 1;
+      const change = {
+        columnIndex: c,
+        columnName: colName,
+        newRowIndex,
+        oldRowIndex,
+        newExcelRow,
+        oldExcelRow,
+        excelCol,
+        newCellAddress: `${columnLetter(excelCol)}${newExcelRow}`,
+        oldCellAddress: oldExcelRow === null ? '(no matching old row)' : `${columnLetter(excelCol)}${oldExcelRow}`,
+        oldValue,
+        newValue,
+        fillKey: classification.fillKey,
+        changeType: classification.changeType,
+        matchKey: keyInfo.label
+      };
+      rowChanges.push(change);
+      summaryRows.push(change);
+    }
+
+    if (rowChanged) {
+      const outputRowNumber = changedRows.length + 2;
+      changedRows.push({ sourceRowIndex: newRowIndex, values: newRow.slice(), changes: rowChanges, keyInfo });
+      rowChanges.forEach(ch => changeMap.set(`${outputRowNumber}:${ch.excelCol}`, ch));
+    }
+  }
+
+  summaryRows.sort((a, b) => {
+    if (a.columnIndex !== b.columnIndex) return a.columnIndex - b.columnIndex;
+    return a.newExcelRow - b.newExcelRow;
+  });
+
+  return { changedRows, summaryRows, changeMap, unmatchedNewRows };
+}
+
+function emptyDataRow() { return Array(EXPECTED_HEADERS.length).fill(''); }
+function sameCellValue(a, b) { return String(a ?? '').trim() === String(b ?? '').trim(); }
+function isBlank(v) { return String(v ?? '').trim() === ''; }
+
+function classifyChange(oldValue, newValue, columnName) {
+  const oldBlank = isBlank(oldValue);
+  const newBlank = isBlank(newValue);
+
+  if (NUMERIC_COLUMNS.has(columnName) && !oldBlank && !newBlank) {
+    const oldNum = parseNumeric(oldValue);
+    const newNum = parseNumeric(newValue);
+    if (Number.isFinite(oldNum) && Number.isFinite(newNum)) {
+      if (newNum > oldNum) return { fillKey: 'blue', changeType: 'Numeric increase' };
+      if (newNum < oldNum) return { fillKey: 'orange', changeType: 'Numeric decrease' };
+    }
+  }
+
+  if (oldBlank && !newBlank) return { fillKey: 'green', changeType: 'Blank to populated' };
+  if (!oldBlank && newBlank) return { fillKey: 'red', changeType: 'Populated to blank' };
+  return { fillKey: 'yellow', changeType: 'Value changed' };
+}
+
+function parseNumeric(value) {
+  let s = String(value ?? '').trim();
+  if (!s) return NaN;
+  const negative = /^\(.*\)$/.test(s);
+  s = s.replace(/[,$%\s]/g, '').replace(/[()]/g, '');
+  const n = Number(s);
+  return negative ? -n : n;
+}
+
+function buildSummaryText(summaryRows) {
+  if (!summaryRows.length) return 'No changes found.';
+  let currentColumn = '';
+  const lines = [];
+
+  for (const row of summaryRows) {
+    if (row.columnName !== currentColumn) {
+      if (lines.length) lines.push('');
+      currentColumn = row.columnName;
+      lines.push(`[${currentColumn}]`);
+      lines.push('New Cell\tOld Cell\tMatch Key\tOld Value\tNew Value\tChange Type');
+    }
+    lines.push(`${row.newCellAddress}\t${row.oldCellAddress}\t${row.matchKey}\t${displayValue(row.oldValue)}\t${displayValue(row.newValue)}\t${row.changeType}`);
+  }
+  return lines.join('\n');
+}
+
+function displayValue(v) { return isBlank(v) ? '(blank)' : String(v); }
+
+function renderSummaryTable(summaryRows) {
+  const tbody = $('summaryTable').querySelector('tbody');
+  tbody.innerHTML = '';
+
+  if (!summaryRows.length) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = 6;
+    td.textContent = 'No changes found.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
+  const frag = document.createDocumentFragment();
+  for (const r of summaryRows) {
+    const tr = document.createElement('tr');
+    [r.columnName, r.newCellAddress, r.matchKey, displayValue(r.oldValue), displayValue(r.newValue), r.changeType].forEach(v => {
+      const td = document.createElement('td');
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    frag.appendChild(tr);
+  }
+  tbody.appendChild(frag);
+}
+
+async function buildWorkbook(results, newFileName) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'WWS Report Updates Summary Tool';
+  workbook.created = new Date();
+
+  const dataWs = workbook.addWorksheet('Updated Data');
+  const summaryWs = workbook.addWorksheet('Change Summary');
+
+  // Build the table directly. Do not pre-add rows or apply a separate worksheet AutoFilter.
+  // This avoids Excel repair messages that remove /xl/tables/table1.xml content.
+  dataWs.addTable({
+    name: uniqueTableName('UpdatedData'),
+    ref: 'A1',
+    headerRow: true,
+    totalsRow: false,
+    style: { theme: 'TableStyleMedium2', showRowStripes: true },
+    columns: EXPECTED_HEADERS.map(h => ({ name: h, filterButton: true })),
+    rows: results.changedRows.map(r => r.values)
+  });
+
+  setColumnWidths(dataWs, EXPECTED_HEADERS);
+  dataWs.views = [{ state: 'frozen', ySplit: 1 }];
+  styleHeaderRow(dataWs.getRow(1));
+  borderUsedRange(dataWs);
+
+  for (const [key, change] of results.changeMap.entries()) {
+    const [rowNumber, colNumber] = key.split(':').map(Number);
+    dataWs.getRow(rowNumber).getCell(colNumber).fill = solidFill(COLORS[change.fillKey]);
+  }
+
+  const summaryHeaders = ['Column', 'New Cell', 'Old Cell', 'Match Key', 'Old Value', 'New Value', 'Change Type'];
+  summaryWs.addRow(summaryHeaders);
+  for (const r of results.summaryRows) {
+    summaryWs.addRow([r.columnName, r.newCellAddress, r.oldCellAddress, r.matchKey, displayValue(r.oldValue), displayValue(r.newValue), r.changeType]);
+  }
+  setColumnWidths(summaryWs, summaryHeaders);
+  summaryWs.views = [{ state: 'frozen', ySplit: 1 }];
+  summaryWs.autoFilter = { from: 'A1', to: 'G1' };
+  styleHeaderRow(summaryWs.getRow(1));
+  borderUsedRange(summaryWs);
+
+  for (let i = 2; i <= summaryWs.rowCount; i++) {
+    const type = String(summaryWs.getRow(i).getCell(7).value || '');
+    const fillKey = type === 'Numeric increase' ? 'blue'
+      : type === 'Numeric decrease' ? 'orange'
+      : type === 'Blank to populated' ? 'green'
+      : type === 'Populated to blank' ? 'red'
+      : 'yellow';
+    summaryWs.getRow(i).eachCell(cell => { cell.fill = solidFill(COLORS[fillKey]); });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  downloadBlob(blob, `${deriveReportDate(newFileName)} WWS Report Updates Summary.xlsx`);
+}
+
+function uniqueTableName(base) {
+  return `${base}_${Date.now()}`.replace(/[^A-Za-z0-9_]/g, '_');
+}
+
+function styleHeaderRow(row) {
+  row.eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FF111827' } };
+    cell.fill = solidFill(COLORS.tableHeader);
+    cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+    cell.border = thinBorder();
+  });
+}
+
+function setColumnWidths(ws, headers) {
+  headers.forEach((h, i) => {
+    ws.getColumn(i + 1).width = Math.min(Math.max(String(h).length + 4, 14), 38);
+  });
+}
+
+function borderUsedRange(ws) {
+  ws.eachRow(row => {
+    row.eachCell(cell => {
+      cell.alignment = { vertical: 'top', wrapText: true };
+      cell.border = thinBorder();
+    });
+  });
+}
+
+function solidFill(rgb) {
+  return { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${rgb}` } };
+}
+
+function thinBorder() {
+  return {
+    top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+    right: { style: 'thin', color: { argb: 'FFD1D5DB' } }
+  };
+}
+
+function deriveReportDate(fileName) {
+  const base = String(fileName || '').replace(/\.[^.]+$/, '').trim();
+  const m = base.match(/\b(\d{1,2})[._-](\d{1,2})[._-](\d{2,4})\b/);
+  if (m) {
+    const mm = m[1].padStart(2, '0');
+    const dd = m[2].padStart(2, '0');
+    const yyyy = m[3].length === 2 ? `20${m[3]}` : m[3];
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+}
+
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function columnLetter(n) {
+  let s = '';
+  while (n > 0) {
+    const m = (n - 1) % 26;
+    s = String.fromCharCode(65 + m) + s;
+    n = Math.floor((n - m) / 26);
+  }
+  return s;
+}
+
+async function copySummaryText() {
+  if (!lastSummaryText) return;
+  try {
+    await navigator.clipboard.writeText(lastSummaryText);
+    showStatus('Summary text copied.');
+  } catch {
+    $('summaryText').select();
+    document.execCommand('copy');
+    showStatus('Summary text copied.');
+  }
+}
+</script>
+</body>
+</html>

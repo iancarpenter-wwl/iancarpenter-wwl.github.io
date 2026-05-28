@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Monroney Print Scan Check</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WWS SMY Tools Landing Page</title>
+
+<style>
 :root {
   --brand: #00bc98;
   --gray-900: #343741;
@@ -15,8 +16,6 @@
   --card: #ffffff;
   --text: #111827;
   --muted: #555;
-  --danger-bg: #fee2e2;
-  --badge-bg: #e5e7eb;
   --shadow: 0 1px 4px rgba(0,0,0,0.08);
   --radius: 8px;
 }
@@ -27,11 +26,10 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   background: var(--bg);
   margin: 0;
-  padding: 0;
   color: var(--text);
 }
 
-/* Header bar */
+/* Header */
 .header {
   background: var(--brand);
   color: #fff;
@@ -54,29 +52,14 @@ body {
   border: 1px dashed rgba(255,255,255,0.65);
   display: grid;
   place-items: center;
-  flex: 0 0 auto;
 }
 
-.logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.logo-placeholder {
-  font-size: 10px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.9);
-  user-select: none;
-}
+.logo svg { width: 100%; height: 100%; }
 
 .header-title {
   font-size: 18px;
   font-weight: 650;
   margin: 0;
-  line-height: 1.1;
 }
 
 .header-subtitle {
@@ -85,335 +68,115 @@ body {
   opacity: 0.9;
 }
 
+/* Layout */
 .container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px;
 }
 
-h1 { margin: 0 0 12px 0; }
+h1 {
+  margin: 0 0 16px 0;
+}
 
-.grid {
+/* Tile Grid */
+.tile-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
 }
 
-@media (max-width: 900px) {
-  .grid { grid-template-columns: 1fr; }
-}
-
-textarea, input {
-  width: 100%;
-  padding: 8px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #fff;
-}
-
-textarea { min-height: 220px; }
-
-.card {
+/* Tile */
+.tile {
   background: var(--card);
   border-radius: var(--radius);
-  padding: 12px;
+  padding: 16px;
   box-shadow: var(--shadow);
-}
-
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 8px 0;
-  font-size: 14px;
-}
-
-.badge {
-  background: var(--badge-bg);
-  padding: 4px 8px;
-  border-radius: 999px;
-}
-
-.badge.danger {
-  background: var(--danger-bg);
-}
-
-.row {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/* Buttons */
-button {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 120ms ease, box-shadow 120ms ease;
   border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
+}
+
+.tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  border-color: #e5e7eb;
+}
+
+.tile-title {
   font-weight: 600;
-  line-height: 1;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--brand);
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background: #00a985;
-}
-
-.btn-gray {
-  background: var(--gray-900);
-  color: #fff;
-}
-
-.btn-gray:hover {
-  background: #2b2e36;
-}
-
-.btn-gray-700 {
-  background: var(--gray-700);
-  color: #fff;
-}
-
-.btn-gray-700:hover {
-  background: #4f545b;
-}
-
-.btn-gray-500 {
-  background: var(--gray-500);
-  color: #111827;
-}
-
-.btn-gray-500:hover {
-  background: #9ea0a4;
-}
-
-.btn-gray-100 {
-  background: var(--gray-100);
-  color: #111827;
-  border-color: #d1d5db;
-}
-
-.btn-gray-100:hover {
-  background: #e3e4e6;
-}
-
-.tabs { margin-top: 10px; }
-
-.tab-buttons {
-  display: flex;
-  gap: 6px;
   margin-bottom: 6px;
 }
 
-.tab-buttons button { padding: 6px 10px; }
-
-.hidden { display: none; }
-
-.hint {
+.tile-desc {
   font-size: 13px;
   color: var(--muted);
-  margin-bottom: 6px;
 }
 
-  
-
-.logo svg { width: 100%; height: 100%; }
-  </style>
+/* Optional badge */
+.tile-meta {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--gray-500);
+}
+</style>
 </head>
+
 <body>
 
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo" aria-label="Logo">
-        <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 226.8092 200">
-  <defs>
-    <style>
-      .cls-1 {
-        fill: #fff;
-      }
-    </style>
-  </defs>
-  <path class="cls-1" d="M103.952,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5591c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174c.0803-.2248,.0723-.4014,.0241-.554Z"/>
-  <path class="cls-1" d="M150.4292,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5511c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174c.0803-.2168,.0723-.3934,.0241-.5459Z"/>
-  <path class="cls-1" d="M161.7333,56.2927c-4.3354,0-7.868,3.5326-7.868,7.868s3.5326,7.868,7.868,7.868,7.868-3.5326,7.868-7.868-3.5326-7.868-7.868-7.868m0,22.0704c-7.8278,0-14.2025-6.3666-14.2025-14.2025,0-7.8278,6.3666-14.2025,14.2025-14.2025,7.8278,0,14.1944,6.3666,14.1944,14.2025,.008,7.8278-6.3666,14.2025-14.1944,14.2025"/>
-</svg>
-      </div>
-      <div>
-        <div class="header-title">Monroney Print Scan Check</div>
-        <div class="header-subtitle">Paste a source list, then scan/type items. Anything not scanned remains in Missing.</div>
-      </div>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <!-- same logo SVG reused -->
+      <svg viewBox="0 0 226.8092 200">
+        <path fill="#fff" d="M103.952,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5591c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174Z"/>
+        <path fill="#fff" d="M150.4292,129.5771l-26.8073-77.9972c-.1847-.562-.4817-.6985-.835-.6985h-24.6958c-.554,0-.835,.554-.6985,.9795l32.7323,96.5511c.1847,.554,.554,.6985,.8912,.6985h11.1597c.2971,0,.6423-.1204,.7948-.57l7.4344-18.4174Z"/>
+        <path fill="#fff" d="M161.7333,56.2927c-4.3354,0-7.868,3.5326-7.868,7.868s3.5326,7.868,7.868,7.868,7.868-3.5326,7.868-7.868-3.5326-7.868-7.868-7.868"/>
+      </svg>
     </div>
-  </header>
-  <div class="container">
-<div class="grid">
-      <!-- Source list -->
-      <div class="card">
-        <h3>Source List (Paste)</h3>
-        <div class="stats">
-          <span class="badge" id="srcCount">Source: 0</span>
-          <span class="badge" id="enteredCount">Entered: 0</span>
-          <span class="badge" id="foundCount">Found: 0</span>
-          <span class="badge danger" id="missingCount">Missing: 0</span>
-        </div>
-        <textarea id="source"></textarea>
-        <div class="row">
-          <button class="btn-primary" onclick="resetAll()">Reset All</button>
-        </div>
-      </div>
-
-      <!-- Entry side -->
-      <div class="card">
-        <h3>Enter / Scan Items</h3>
-        <div class="hint">Auto-adds at <b>17 characters</b> (scanner-friendly)</div>
-        <input id="entry" autocomplete="off" />
-
-        <div class="tabs">
-          <div class="tab-buttons">
-            <button class="btn-gray-100" onclick="showTab('missing')">Missing</button>
-            <button class="btn-gray-100" onclick="showTab('entered')">Entered</button>
-          </div>
-
-          <div id="missingTab">
-            <textarea id="missing" readonly></textarea>
-            <div class="row">
-              <button class="btn-gray" onclick="copyMissing()">Copy Missing</button>
-            </div>
-          </div>
-
-          <div id="enteredTab" class="hidden">
-            <textarea id="entered"></textarea>
-            <div class="row">
-              <button class="btn-gray" onclick="copyEntered()">Copy Entered</button>
-              <button class="btn-gray-700" onclick="clearEntered()">Clear Entered</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div>
+      <div class="header-title">USSMY Operations Tools</div>
+      <div class="header-subtitle">Select a tile to get started</div>
     </div>
   </div>
+</header>
 
-  <script>
-    const AUTO_LEN = 17;
+<div class="container">
+  <h1>Available Tools</h1>
 
-    const sourceEl = document.getElementById('source');
-    const entryEl = document.getElementById('entry');
-    const enteredEl = document.getElementById('entered');
-    const missingEl = document.getElementById('missing');
+  <div class="tile-grid">
 
-    const srcCountEl = document.getElementById('srcCount');
-    const enteredCountEl = document.getElementById('enteredCount');
-    const foundCountEl = document.getElementById('foundCount');
-    const missingCountEl = document.getElementById('missingCount');
+    <!-- TILE 1 -->
+    <a class="tile" href="./Monroney_Reprint_Scan_Check.singlefile.html">
+      <div class="tile-title">Monroney Print Scan Check</div>
+      <div class="tile-desc">
+        Paste source list and scan or enter items. Missing items are tracked automatically.
+      </div>
+      <div class="tile-meta">Scanner workflow</div>
+    </a>
 
-    let lastAuto = { value: '', ts: 0 };
+    <!-- TILE 2 -->
+    <a class="tile" href="./wws_report_updates_summary_v2.html">
+      <div class="tile-title">US Fleet Report Updates Summary</div>
+      <div class="tile-desc">
+        Compare two CSV reports and generate a highlighted Excel workbook with changes.
+      </div>
+      <div class="tile-meta">CSV comparison</div>
+    </a>
 
-    function normalize(v) {
-      return v.trim().toLowerCase().replace(/\s+/g, ' ');
-    }
+    <!-- ADD NEW TILES BELOW (copy block) -->
+    <!--
+    <a class="tile" href="./your_new_page.html">
+      <div class="tile-title">New Tool Name</div>
+      <div class="tile-desc">Short description of what it does.</div>
+      <div class="tile-meta">Optional tag</div>
+    </a>
+    -->
 
-    function lines(text) {
-      return text.split(/\r?\n/).map(l => l.replace(/\u00A0/g, ''));
-    }
+  </div>
+</div>
 
-    function update() {
-      const source = Array.from(new Set(
-        lines(sourceEl.value).map(normalize).filter(Boolean)
-      ));
-
-      const entered = lines(enteredEl.value).map(normalize).filter(Boolean);
-      const enteredSet = new Set(entered);
-
-      const missing = source.filter(v => !enteredSet.has(v));
-
-      srcCountEl.textContent = `Source: ${source.length}`;
-      enteredCountEl.textContent = `Entered: ${entered.length}`;
-      foundCountEl.textContent = `Found: ${source.length - missing.length}`;
-      missingCountEl.textContent = `Missing: ${missing.length}`;
-
-      missingEl.value = missing.join('\n');
-    }
-
-    function addEntry(val) {
-      const v = normalize(val);
-      if (!v) return;
-      enteredEl.value = enteredEl.value ? enteredEl.value + '\n' + v : v;
-      entryEl.value = '';
-      update();
-      entryEl.focus();
-    }
-
-	entryEl.addEventListener('keydown', e => {
-	  if (e.key === 'Tab') {
-		e.preventDefault();
-		entryEl.focus();
-		return;
-	  }
-	  if (e.key === 'Enter') {
-		e.preventDefault();
-		addEntry(entryEl.value);
-	  }
-	});
-
-    entryEl.addEventListener('input', () => {
-      const val = entryEl.value;
-      if (val.length >= AUTO_LEN) {
-        const now = Date.now();
-        const toAdd = val.slice(0, AUTO_LEN);
-        const remainder = val.slice(AUTO_LEN);
-
-        if (!(lastAuto.value === toAdd && now - lastAuto.ts < 300)) {
-          lastAuto = { value: toAdd, ts: now };
-          addEntry(toAdd);
-        }
-
-        if (remainder.length) {
-          queueMicrotask(() => entryEl.value = remainder);
-        }
-      }
-    });
-
-    sourceEl.addEventListener('input', update);
-    enteredEl.addEventListener('input', update);
-
-    function resetAll() {
-      sourceEl.value = '';
-      enteredEl.value = '';
-      entryEl.value = '';
-      update();
-      entryEl.focus();
-    }
-
-    function clearEntered() {
-      enteredEl.value = '';
-      update();
-      entryEl.focus();
-    }
-
-    function copyMissing() {
-      navigator.clipboard.writeText(missingEl.value);
-    }
-
-    function copyEntered() {
-      navigator.clipboard.writeText(enteredEl.value);
-    }
-
-    function showTab(which) {
-      document.getElementById('missingTab').classList.toggle('hidden', which !== 'missing');
-      document.getElementById('enteredTab').classList.toggle('hidden', which !== 'entered');
-    }
-
-    update();
-  </script>
 </body>
 </html>

@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workbook C Compiler</title>
+  <style>
+    :root {
+      --brand: #00bc98;
+      --gray-900: #343741;
+      --gray-700: #595e66;
+      --gray-500: #aeafb3;
+      --gray-100: #efeff0;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #555;
+      --danger-bg: #fee2e2;
+      --badge-bg: #e5e7eb;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+    }
+    .header {
+      background: var(--brand);
+      color: #fff;
+      padding: 12px 18px;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.18);
+      border: 1px dashed rgba(255,255,255,0.65);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      user-select: none;
+    }
+    .logo span {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.92);
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 650;
+      margin: 0;
+      line-height: 1.1;
+    }
+    .header-subtitle {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+    h3 { margin: 0 0 10px 0; }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 8px 0;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    .badge {
+      background: var(--badge-bg);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-variant-numeric: tabular-nums;
+    }
+    .badge.danger { background: var(--danger-bg); }
+    button {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      line-height: 1;
+      transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .btn-primary { background: var(--brand); color: #fff; }
+    .btn-primary:hover { background: #00a985; }
+    .btn-gray { background: var(--gray-900); color: #fff; }
+    .btn-gray:hover { background: #2b2e36; }
+    .btn-gray-700 { background: var(--gray-700); color: #fff; }
+    .btn-gray-700:hover { background: #4f545b; }
+    .btn-gray-100 { background: var(--gray-100); color: #111827; border-color: #d1d5db; }
+    .btn-gray-100:hover { background: #e3e4e6; }
+
+    input[type="file"], input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 14px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      vertical-align: top;
+      text-align: left;
+      max-width: 260px;
+      overflow-wrap: anywhere;
+    }
+    th {
+      background: #f3f4f6;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .scroll {
+      max-height: 360px;
+      overflow: auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo" aria-label="Logo"><span>WWS</span></div>
+      <div>
+        <div class="header-title">Workbook C Compiler</div>
+        <div class="header-subtitle">Load A (CSV) + B (CSV) + optional C (CSV export of DATA). Merge/dedupe/fill, then download compiled C (DATA) CSV.</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+
+      <div class="card">
+        <h3>Inputs</h3>
+        <div class="hint">Workbook B and Workbook C must be exported to CSV before upload.</div>
+
+        <div class="row">
+          <div style="flex:1 1 320px;">
+            <div class="hint"><b>Workbook A</b> (CSV)</div>
+            <input type="file" id="fileA" accept=".csv,text/csv" />
+          </div>
+          <div style="flex:1 1 320px;">
+            <div class="hint"><b>Workbook B</b> (CSV)</div>
+            <input type="file" id="fileB" accept=".csv,text/csv" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1 1 320px;">
+            <div class="hint"><b>Workbook C (optional)</b> (CSV export of DATA sheet/table)</div>
+            <input type="file" id="fileC" accept=".csv,text/csv" />
+          </div>
+        </div>
+
+        <div class="stats">
+          <span class="badge" id="aStatus">A: not loaded</span>
+          <span class="badge" id="bStatus">B: not loaded</span>
+          <span class="badge" id="cStatus">C: not loaded</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Lookups (Optional)</h3>
+        <div class="hint">If you provide these, the tool can fill <span class="mono">UPFIT PACKAGE</span> and optionally <span class="mono">INVOICE</span>/<span class="mono">QUOTE(S)</span>.</div>
+
+        <div class="row">
+          <div style="flex:1 1 320px;">
+            <div class="hint"><b>Package Lookup</b> CSV (columns: MCODE, PKGCDE, UPFIT PACKAGE [, DEFAULT INVOICE] [, DEFAULT QUOTE])</div>
+            <input type="file" id="filePkg" accept=".csv,text/csv" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="flex:1 1 320px;">
+            <div class="hint"><b>Quotes</b> CSV (columns: ORDER, MCODE, PKGCDE, QUOTE(S), INVOICE)</div>
+            <input type="file" id="fileQuotes" accept=".csv,text/csv" />
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div class="hint"><b>Default CUSTOMER</b> (used only if missing and no lookup exists)</div>
+            <input type="text" id="defaultCustomer" placeholder="e.g. US FLEET" />
+          </div>
+          <div>
+            <div class="hint"><b>Default COLOR</b> (used only if missing)</div>
+            <input type="text" id="defaultColor" placeholder="e.g. BLACK" />
+          </div>
+        </div>
+
+        <div class="stats">
+          <span class="badge" id="pkgStatus">Package lookup: not loaded</span>
+          <span class="badge" id="quotesStatus">Quotes: not loaded</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Run</h3>
+        <div class="hint">Primary match: <span class="mono">VIN</span> → <span class="mono">ORDER</span> → <span class="mono">FON</span> → <span class="mono">CUSTOMERID</span>. Existing C values are preserved; blanks are filled from B then A.</div>
+
+        <div class="row">
+          <button class="btn-primary" id="btnMerge" disabled>Merge & Build Output</button>
+          <button class="btn-gray" id="btnDownload" disabled>Download Compiled C (DATA).csv</button>
+          <button class="btn-gray-700" id="btnReset">Reset</button>
+        </div>
+
+        <div class="stats">
+          <span class="badge" id="outRows">Output rows: 0</span>
+          <span class="badge" id="addedRows">Added rows: 0</span>
+          <span class="badge" id="updatedRows">Updated rows: 0</span>
+          <span class="badge danger" id="skippedRows">Skipped rows (no keys): 0</span>
+        </div>
+
+        <div class="hint mono" id="log" style="white-space: pre-wrap;"></div>
+      </div>
+
+      <div class="card">
+        <h3>Preview (first 25 rows)</h3>
+        <div class="scroll">
+          <table id="previewTable">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Output headers (Workbook C / DATA)
+   ========================= */
+const C_HEADERS = [
+  "UPFIT",
+  "UPFIT LOCATION",
+  "CUSTOMERID",
+  "FON",
+  "OEM",
+  "MODEL DESCRIPTION",
+  "COLOR",
+  "UPFIT PACKAGE",
+  "VIN",
+  "UNIT STATUS",
+  "OEM ORDER DATE",
+  "OEM ESTPROD DATE",
+  "RECEIVE DATE",
+  "EST UPFIT MONTH",
+  "UPFIT DATE",
+  "SHIP DATE",
+  "DEALER ETA",
+  "DEALER DELIVERY",
+  "INVOICE",
+  "QUOTE(S)",
+  "RECEIVED PO?"
+];
+
+const els = {
+  fileA: document.getElementById("fileA"),
+  fileB: document.getElementById("fileB"),
+  fileC: document.getElementById("fileC"),
+  filePkg: document.getElementById("filePkg"),
+  fileQuotes: document.getElementById("fileQuotes"),
+  defaultCustomer: document.getElementById("defaultCustomer"),
+  defaultColor: document.getElementById("defaultColor"),
+
+  aStatus: document.getElementById("aStatus"),
+  bStatus: document.getElementById("bStatus"),
+  cStatus: document.getElementById("cStatus"),
+  pkgStatus: document.getElementById("pkgStatus"),
+  quotesStatus: document.getElementById("quotesStatus"),
+
+  btnMerge: document.getElementById("btnMerge"),
+  btnDownload: document.getElementById("btnDownload"),
+  btnReset: document.getElementById("btnReset"),
+
+  outRows: document.getElementById("outRows"),
+  addedRows: document.getElementById("addedRows"),
+  updatedRows: document.getElementById("updatedRows"),
+  skippedRows: document.getElementById("skippedRows"),
+
+  log: document.getElementById("log"),
+  previewTable: document.getElementById("previewTable"),
+};
+
+let dataA = null, dataB = null, dataC = null;
+let pkgLookup = null, quotesLookup = null;
+let outputCsv = "";
+let outputRows = [];
+
+/* =========================
+   Small utilities
+   ========================= */
+function logLine(s) { els.log.textContent = (els.log.textContent ? els.log.textContent + "\n" : "") + s; }
+function clearLog() { els.log.textContent = ""; }
+
+function normHeader(h) {
+  return String(h || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\u00A0/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[^\w\s#()/-]/g, "");
+}
+function normVal(v) {
+  if (v === null || v === undefined) return "";
+  return String(v).replace(/\u00A0/g, " ").trim();
+}
+function isBlank(v) { return !normVal(v); }
+
+function cleanVin(v) {
+  v = normVal(v).toUpperCase().replace(/\s+/g, "");
+  // VINs are often 17 chars; we still allow non-17 if present
+  return v;
+}
+function cleanKey(v) {
+  return normVal(v).toUpperCase().replace(/\s+/g, "");
+}
+
+/* =========================
+   CSV parse / write (robust enough for quoted commas/newlines)
+   ========================= */
+function parseCSV(text) {
+  text = String(text || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const rows = [];
+  let row = [];
+  let field = "";
+  let i = 0;
+  let inQuotes = false;
+
+  while (i < text.length) {
+    const c = text[i];
+
+    if (inQuotes) {
+      if (c === '"') {
+        const next = text[i + 1];
+        if (next === '"') { field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      } else {
+        field += c; i++; continue;
+      }
+    } else {
+      if (c === '"') { inQuotes = true; i++; continue; }
+      if (c === ",") { row.push(field); field = ""; i++; continue; }
+      if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; i++; continue; }
+      field += c; i++; continue;
+    }
+  }
+  row.push(field);
+  rows.push(row);
+
+  // Trim trailing empty rows
+  while (rows.length && rows[rows.length - 1].every(x => isBlank(x))) rows.pop();
+
+  if (!rows.length) return { headers: [], rows: [] };
+
+  const headers = rows[0].map(h => normVal(h));
+  const dataRows = rows.slice(1).filter(r => r.some(x => !isBlank(x)));
+
+  return { headers, rows: dataRows };
+}
+
+function csvEscape(v) {
+  v = normVal(v);
+  if (/[",\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
+  return v;
+}
+function buildCSV(headers, rows) {
+  const out = [];
+  out.push(headers.map(csvEscape).join(","));
+  for (const r of rows) {
+    out.push(headers.map(h => csvEscape(r[h])).join(","));
+  }
+  return out.join("\n");
+}
+
+/* =========================
+   Load file helpers
+   ========================= */
+function readFileText(file) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(fr.result);
+    fr.onerror = () => reject(fr.error);
+    fr.readAsText(file);
+  });
+}
+
+function indexHeaders(headers) {
+  const map = new Map();
+  headers.forEach((h, idx) => {
+    const k = normHeader(h);
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(idx);
+  });
+  return map;
+}
+function getByHeader(rowArr, headerIndexMap, headerCandidates) {
+  for (const h of headerCandidates) {
+    const k = normHeader(h);
+    const idxs = headerIndexMap.get(k);
+    if (idxs && idxs.length) {
+      for (const idx of idxs) {
+        const v = rowArr[idx];
+        if (!isBlank(v)) return normVal(v);
+      }
+      // if all blank, still return blank
+      return normVal(rowArr[idxs[0]]);
+    }
+  }
+  return "";
+}
+function getFirstNonBlankFromHeaders(rowArr, headerIndexMap, predicateFn) {
+  // For cases like multiple VIN columns where headers vary; scan headers and pick first match
+  for (const [k, idxs] of headerIndexMap.entries()) {
+    if (predicateFn(k)) {
+      for (const idx of idxs) {
+        const v = rowArr[idx];
+        if (!isBlank(v)) return normVal(v);
+      }
+    }
+  }
+  return "";
+}
+
+/* =========================
+   Lookup loaders
+   ========================= */
+function buildPackageLookup(csvObj) {
+  // expects at least MCODE, PKGCDE, UPFIT PACKAGE
+  const hix = indexHeaders(csvObj.headers);
+  const map = new Map();
+  for (const r of csvObj.rows) {
+    const mcode = cleanKey(getByHeader(r, hix, ["MCODE", "Model Code", "MODEL CODE"]));
+    const pkgcde = cleanKey(getByHeader(r, hix, ["PKGCDE", "PKGCDE ", "Package Code", "PKGCODE", "PKG CDE"]));
+    if (!mcode && !pkgcde) continue;
+    const pkg = normVal(getByHeader(r, hix, ["UPFIT PACKAGE", "UPFIT_PACKAGE", "PACKAGE", "LU TYPE"]));
+    const defInv = normVal(getByHeader(r, hix, ["DEFAULT INVOICE", "INVOICE", "COST"]));
+    const defQ = normVal(getByHeader(r, hix, ["DEFAULT QUOTE", "QUOTE(S)", "QUOTE"]));
+    map.set(mcode + "|" + pkgcde, { pkg, defInv, defQ });
+  }
+  return map;
+}
+function buildQuotesLookup(csvObj) {
+  // expects ORDER, optionally MCODE/PKGCDE, QUOTE(S), INVOICE
+  const hix = indexHeaders(csvObj.headers);
+  const map = new Map();
+  for (const r of csvObj.rows) {
+    const order = cleanKey(getByHeader(r, hix, ["ORDER", "Nissan Conf#", "NISSAN CONF#", "Nissan Conf#", "CONF#"]));
+    if (!order) continue;
+    const mcode = cleanKey(getByHeader(r, hix, ["MCODE", "Model Code", "MODEL CODE"]));
+    const pkgcde = cleanKey(getByHeader(r, hix, ["PKGCDE", "PKGCODE", "Package Code"]));
+    const quote = normVal(getByHeader(r, hix, ["QUOTE(S)", "QUOTE", "UPFIT QUOTE NUMBER (EXCLUDING WSS BOX)", "UPFIT QUOTE NUMBER"]));
+    const invoice = normVal(getByHeader(r, hix, ["INVOICE", "COST OF UPFIT", "COST"]));
+    // key by ORDER, and if MCODE/PKGCDE present, more specific
+    const k = order + "|" + mcode + "|" + pkgcde;
+    map.set(k, { quote, invoice });
+    // also store coarse key if not present already
+    const k2 = order + "||";
+    if (!map.has(k2)) map.set(k2, { quote, invoice });
+  }
+  return map;
+}
+
+/* =========================
+   Mapping into Workbook C fields
+   ========================= */
+function blankCRow() {
+  const o = {};
+  for (const h of C_HEADERS) o[h] = "";
+  return o;
+}
+function setIfBlank(target, field, value) {
+  if (isBlank(target[field]) && !isBlank(value)) target[field] = normVal(value);
+}
+function setAlways(target, field, value) {
+  if (!isBlank(value)) target[field] = normVal(value);
+}
+
+function deriveKeyFromCRow(cRow) {
+  const vin = cleanVin(cRow["VIN"]);
+  if (vin) return "VIN:" + vin;
+  const order = cleanKey(cRow["FON"]) || cleanKey(cRow["OEM ORDER DATE"]); // not ideal; keep consistent with our main key logic elsewhere
+  if (order) return "ORDER:" + order;
+  const fon = cleanKey(cRow["FON"]);
+  if (fon) return "FON:" + fon;
+  const cid = cleanKey(cRow["CUSTOMERID"]);
+  if (cid) return "CID:" + cid;
+  return "";
+}
+
+function buildKey(vin, order, fon, cid) {
+  vin = cleanVin(vin);
+  order = cleanKey(order);
+  fon = cleanKey(fon);
+  cid = cleanKey(cid);
+
+  if (vin) return "VIN:" + vin;
+  if (order) return "ORDER:" + order;
+  if (fon) return "FON:" + fon;
+  if (cid) return "CID:" + cid;
+  return "";
+}
+
+function mapAtoC(rowArr, hixA) {
+  const out = blankCRow();
+
+  // A fields (best-effort based on your described A columns)
+  const vin = getFirstNonBlankFromHeaders(rowArr, hixA, k => k.includes("vin"));
+  const order = getByHeader(rowArr, hixA, ["ORDER"]);
+  const fon = getByHeader(rowArr, hixA, ["FON"]); // may not exist; okay
+  const vpc = getByHeader(rowArr, hixA, ["VPC"]);
+  const uploc = getByHeader(rowArr, hixA, ["UPFIT LOCATION", "Upfitting Location"]);
+  const mdlDesc = getByHeader(rowArr, hixA, ["MODEL DESC", "MODEL DESCRIPTION"]);
+  const clr = getByHeader(rowArr, hixA, ["CLR", "COLOR"]);
+  const vehStatus = getByHeader(rowArr, hixA, ["VEH STATUS", "UNIT STATUS"]);
+  const ordrmth = getByHeader(rowArr, hixA, ["ORDRMTH", "OEM ORDER DATE"]);
+  const estprod = getByHeader(rowArr, hixA, ["ESTPROD", "OEM ESTPROD DATE"]);
+  const estdelv = getByHeader(rowArr, hixA, ["ESTDELV", "DEALER ETA"]);
+  const drpShip = getByHeader(rowArr, hixA, ["DRP SHIP DATE", "DRP SHIP", "SHIP DATE"]);
+  const mcode = getByHeader(rowArr, hixA, ["MCODE"]);
+  const pkgcde = getByHeader(rowArr, hixA, ["PKGCDE", "PKGCODE"]);
+  const cust = getByHeader(rowArr, hixA, ["CUSTOMER"]);
+  const quote = getByHeader(rowArr, hixA, ["Upfit Quote Number (Excluding WSS Box)", "QUOTE(S)"]);
+  const invoice = getByHeader(rowArr, hixA, ["Cost of Upfit", "INVOICE"]);
+
+  setIfBlank(out, "VIN", vin);
+  setIfBlank(out, "FON", fon || order); // fallback
+  setIfBlank(out, "OEM", "NISSAN");
+  setIfBlank(out, "MODEL DESCRIPTION", mdlDesc);
+  setIfBlank(out, "COLOR", clr);
+  setIfBlank(out, "UNIT STATUS", vehStatus);
+  setIfBlank(out, "OEM ORDER DATE", ordrmth);
+  setIfBlank(out, "OEM ESTPROD DATE", estprod);
+  setIfBlank(out, "DEALER ETA", estdelv);
+  setIfBlank(out, "SHIP DATE", drpShip);
+
+  // Upfit location - first available among known A columns
+  setIfBlank(out, "UPFIT LOCATION", uploc || vpc);
+
+  // CUSTOMERID isn't typically in A; but "CUSTOMER" may be
+  setIfBlank(out, "CUSTOMERID", "");
+  setIfBlank(out, "UPFIT", "");
+
+  // lookups (computed later)
+  out.__mcode = mcode;
+  out.__pkgcde = pkgcde;
+  setIfBlank(out, "QUOTE(S)", quote);
+  setIfBlank(out, "INVOICE", invoice);
+
+  // If A has CUSTOMER (name), keep it in hidden meta for optional fill
+  out.__customerName = cust;
+
+  return out;
+}
+
+function mapBtoC(rowArr, hixB) {
+  const out = blankCRow();
+
+  const customerId = getByHeader(rowArr, hixB, ["CustomerID", "CUSTOMERID"]);
+  const vin = getByHeader(rowArr, hixB, ["VIN"]);
+  const order = getByHeader(rowArr, hixB, ["Nissan Conf#", "Nissan Conf#", "NISSAN CONF#", "Nissan Conf#", "ORDER"]);
+  const model = getByHeader(rowArr, hixB, ["Model", "MODEL"]);
+  const trim = getByHeader(rowArr, hixB, ["Trim", "TRIM"]);
+  const color = getByHeader(rowArr, hixB, ["Color", "COLOR"]);
+  const upfit = getByHeader(rowArr, hixB, ["UPFIT"]);
+  const uploc = getByHeader(rowArr, hixB, ["UPFIT LOCATION", "Upfitting Location", "Upfitting Location", "VPC"]);
+  const unitStatus = getByHeader(rowArr, hixB, ["VEH STATUS", "UNIT STATUS"]);
+  const estBuild = getByHeader(rowArr, hixB, ["OEM Estimated Build Date", "OEM ESTPROD DATE", "ESTPROD"]);
+  const received = getByHeader(rowArr, hixB, ["Delivered to Upfitting Yard", "RECEIVE DATE", "RECEIVED DATE"]);
+  const estStart = getByHeader(rowArr, hixB, ["Expected Upfit Start Date", "EST UPFIT MONTH"]);
+  const upfitDone = getByHeader(rowArr, hixB, ["Upfit Completion Date", "UPFIT DATE"]);
+  const shipped = getByHeader(rowArr, hixB, ["Date Shipped from WWS", "SHIP DATE"]);
+  const delivered = getByHeader(rowArr, hixB, ["Vehicle Delivery Date", "DEALER ETA"]);
+  const invoice = getByHeader(rowArr, hixB, ["Cost of Upfit", "INVOICE"]);
+  const quote = getByHeader(rowArr, hixB, ["Upfit Quote Number (Excluding WSS Box)", "QUOTE(S)"]);
+  const luType = getByHeader(rowArr, hixB, ["LU Type", "UPFIT PACKAGE"]); // sometimes present
+
+  // B doesn't carry MCODE/PKGCDE explicitly in your list; keep LU Type fallback
+  setIfBlank(out, "CUSTOMERID", customerId);
+  setIfBlank(out, "VIN", vin);
+  setIfBlank(out, "FON", "");     // true FON not present; leave blank
+  setIfBlank(out, "OEM", "NISSAN");
+  setIfBlank(out, "MODEL DESCRIPTION", [model, trim].filter(x => !isBlank(x)).join(" ").trim());
+  setIfBlank(out, "COLOR", color);
+  setIfBlank(out, "UPFIT", upfit);
+  setIfBlank(out, "UPFIT LOCATION", uploc);
+  setIfBlank(out, "UNIT STATUS", unitStatus);
+  setIfBlank(out, "OEM ESTPROD DATE", estBuild);
+  setIfBlank(out, "RECEIVE DATE", received);
+  setIfBlank(out, "EST UPFIT MONTH", estStart);
+  setIfBlank(out, "UPFIT DATE", upfitDone);
+  setIfBlank(out, "SHIP DATE", shipped);
+  setIfBlank(out, "DEALER ETA", delivered);
+  setIfBlank(out, "INVOICE", invoice);
+  setIfBlank(out, "QUOTE(S)", quote);
+  setIfBlank(out, "UPFIT PACKAGE", luType);
+
+  out.__order = order;
+  out.__mcode = "";  // not present in B
+  out.__pkgcde = ""; // not present in B
+  out.__customerName = "";
+
+  return out;
+}
+
+function mapCcsvRowToCObject(rowArr, hixC) {
+  const out = blankCRow();
+  // map by exact output headers
+  for (const h of C_HEADERS) {
+    const v = getByHeader(rowArr, hixC, [h]);
+    out[h] = normVal(v);
+  }
+  out.__mcode = "";
+  out.__pkgcde = "";
+  out.__order = "";
+  out.__customerName = "";
+  return out;
+}
+
+/* =========================
+   Merge logic
+   ========================= */
+function mergeRowInto(baseRow, incomingRow) {
+  // Existing baseRow values preserved; fill blanks from incoming
+  for (const h of C_HEADERS) {
+    setIfBlank(baseRow, h, incomingRow[h]);
+  }
+  // carry meta if base missing
+  if (isBlank(baseRow.__mcode)) baseRow.__mcode = incomingRow.__mcode || baseRow.__mcode;
+  if (isBlank(baseRow.__pkgcde)) baseRow.__pkgcde = incomingRow.__pkgcde || baseRow.__pkgcde;
+  if (isBlank(baseRow.__order)) baseRow.__order = incomingRow.__order || baseRow.__order;
+  if (isBlank(baseRow.__customerName)) baseRow.__customerName = incomingRow.__customerName || baseRow.__customerName;
+}
+
+function finalizeLookups(row) {
+  // defaults
+  setIfBlank(row, "OEM", "NISSAN");
+
+  // COLOR default
+  const defColor = normVal(els.defaultColor.value);
+  if (isBlank(row["COLOR"]) && defColor) row["COLOR"] = defColor;
+
+  // CUSTOMER default (if user wants CUSTOMER name, not a C column; we only have CUSTOMERID in C format)
+  // (No-op; CUSTOMER isn't part of C output)
+
+  // UPFIT PACKAGE: if blank, try package lookup by MCODE+PKGCDE
+  if (isBlank(row["UPFIT PACKAGE"])) {
+    const mcode = cleanKey(row.__mcode);
+    const pkgcde = cleanKey(row.__pkgcde);
+    if (pkgLookup && (mcode || pkgcde)) {
+      const hit = pkgLookup.get(mcode + "|" + pkgcde);
+      if (hit && !isBlank(hit.pkg)) row["UPFIT PACKAGE"] = hit.pkg;
+      if (isBlank(row["INVOICE"]) && hit && !isBlank(hit.defInv)) row["INVOICE"] = hit.defInv;
+      if (isBlank(row["QUOTE(S)"]) && hit && !isBlank(hit.defQ)) row["QUOTE(S)"] = hit.defQ;
+    }
+  }
+
+  // Quotes lookup: prefer by ORDER if we can derive it (from meta or FON if it actually holds order)
+  if (quotesLookup && (isBlank(row["INVOICE"]) || isBlank(row["QUOTE(S)"]))) {
+    const order = cleanKey(row.__order) || cleanKey(row["FON"]); // common workaround in your mapping
+    const mcode = cleanKey(row.__mcode);
+    const pkgcde = cleanKey(row.__pkgcde);
+
+    if (order) {
+      const specific = quotesLookup.get(order + "|" + mcode + "|" + pkgcde);
+      const coarse = quotesLookup.get(order + "||");
+      const hit = specific || coarse;
+      if (hit) {
+        if (isBlank(row["QUOTE(S)"]) && !isBlank(hit.quote)) row["QUOTE(S)"] = hit.quote;
+        if (isBlank(row["INVOICE"]) && !isBlank(hit.invoice)) row["INVOICE"] = hit.invoice;
+      }
+    }
+  }
+}
+
+/* =========================
+   Preview
+   ========================= */
+function renderPreview(rows) {
+  const head = els.previewTable.querySelector("thead");
+  const body = els.previewTable.querySelector("tbody");
+  head.innerHTML = "";
+  body.innerHTML = "";
+
+  const trh = document.createElement("tr");
+  for (const h of C_HEADERS) {
+    const th = document.createElement("th");
+    th.textContent = h;
+    trh.appendChild(th);
+  }
+  head.appendChild(trh);
+
+  const take = rows.slice(0, 25);
+  for (const r of take) {
+    const tr = document.createElement("tr");
+    for (const h of C_HEADERS) {
+      const td = document.createElement("td");
+      td.textContent = normVal(r[h]);
+      tr.appendChild(td);
+    }
+    body.appendChild(tr);
+  }
+}
+
+/* =========================
+   File input handlers
+   ========================= */
+async function loadCsvFile(file, labelEl, onLoaded) {
+  clearLog();
+  if (!file) return;
+  labelEl.textContent = `${labelEl.id.startsWith("a") ? "A" : labelEl.id.startsWith("b") ? "B" : labelEl.id.startsWith("c") ? "C" : "CSV"}: loading...`;
+  try {
+    const text = await readFileText(file);
+    const csv = parseCSV(text);
+    labelEl.textContent = `${labelEl.textContent.split(":")[0]}: ${file.name} (${csv.rows.length} rows)`;
+    onLoaded(csv);
+    logLine(`Loaded ${file.name}: ${csv.headers.length} cols, ${csv.rows.length} rows`);
+  } catch (e) {
+    labelEl.textContent = `${labelEl.textContent.split(":")[0]}: failed to load`;
+    logLine(`ERROR: ${e && e.message ? e.message : e}`);
+  }
+}
+
+function updateRunEnabled() {
+  els.btnMerge.disabled = !(dataA && dataB);
+}
+
+els.fileA.addEventListener("change", () => {
+  const f = els.fileA.files[0];
+  loadCsvFile(f, els.aStatus, (csv) => dataA = csv).then(updateRunEnabled);
+});
+els.fileB.addEventListener("change", () => {
+  const f = els.fileB.files[0];
+  loadCsvFile(f, els.bStatus, (csv) => dataB = csv).then(updateRunEnabled);
+});
+els.fileC.addEventListener("change", () => {
+  const f = els.fileC.files[0];
+  if (!f) { dataC = null; els.cStatus.textContent = "C: not loaded"; return; }
+  loadCsvFile(f, els.cStatus, (csv) => dataC = csv).then(updateRunEnabled);
+});
+
+els.filePkg.addEventListener("change", async () => {
+  const f = els.filePkg.files[0];
+  if (!f) { pkgLookup = null; els.pkgStatus.textContent = "Package lookup: not loaded"; return; }
+  try {
+    const text = await readFileText(f);
+    const csv = parseCSV(text);
+    pkgLookup = buildPackageLookup(csv);
+    els.pkgStatus.textContent = `Package lookup: ${f.name} (${pkgLookup.size} keys)`;
+  } catch (e) {
+    pkgLookup = null;
+    els.pkgStatus.textContent = "Package lookup: failed";
+    logLine(`ERROR (package lookup): ${e && e.message ? e.message : e}`);
+  }
+});
+
+els.fileQuotes.addEventListener("change", async () => {
+  const f = els.fileQuotes.files[0];
+  if (!f) { quotesLookup = null; els.quotesStatus.textContent = "Quotes: not loaded"; return; }
+  try {
+    const text = await readFileText(f);
+    const csv = parseCSV(text);
+    quotesLookup = buildQuotesLookup(csv);
+    els.quotesStatus.textContent = `Quotes: ${f.name} (${quotesLookup.size} keys)`;
+  } catch (e) {
+    quotesLookup = null;
+    els.quotesStatus.textContent = "Quotes: failed";
+    logLine(`ERROR (quotes): ${e && e.message ? e.message : e}`);
+  }
+});
+
+/* =========================
+   Merge button
+   ========================= */
+els.btnMerge.addEventListener("click", () => {
+  clearLog();
+  if (!dataA || !dataB) return;
+
+  // Index headers
+  const hixA = indexHeaders(dataA.headers);
+  const hixB = indexHeaders(dataB.headers);
+
+  // Build base from C if provided
+  const outMap = new Map();
+  let updated = 0, added = 0, skipped = 0;
+
+  if (dataC && dataC.headers.length) {
+    const hixC = indexHeaders(dataC.headers);
+    for (const r of dataC.rows) {
+      const cObj = mapCcsvRowToCObject(r, hixC);
+      const key = buildKey(cObj["VIN"], cObj["FON"], cObj["FON"], cObj["CUSTOMERID"]);
+      if (!key) { skipped++; continue; }
+      outMap.set(key, cObj);
+    }
+    logLine(`Seeded from C: ${outMap.size} keyed rows`);
+  }
+
+  // Helper for change detection (only to count updates)
+  function snapshot(row) {
+    return C_HEADERS.map(h => normVal(row[h])).join("¦");
+  }
+
+  // Merge B first (higher priority than A for many output fields)
+  for (const r of dataB.rows) {
+    const incoming = mapBtoC(r, hixB);
+
+    // build key using VIN then ORDER then FON then CUSTOMERID
+    const key = buildKey(incoming["VIN"], incoming.__order, incoming["FON"], incoming["CUSTOMERID"]);
+    if (!key) { skipped++; continue; }
+
+    const existing = outMap.get(key);
+    if (!existing) {
+      outMap.set(key, incoming);
+      added++;
+    } else {
+      const before = snapshot(existing);
+      mergeRowInto(existing, incoming);
+      const after = snapshot(existing);
+      if (before !== after) updated++;
+    }
+  }
+
+  // Merge A second
+  for (const r of dataA.rows) {
+    const incoming = mapAtoC(r, hixA);
+    const order = getByHeader(r, hixA, ["ORDER"]);
+    incoming.__order = order;
+
+    const key = buildKey(incoming["VIN"], incoming.__order, incoming["FON"], incoming["CUSTOMERID"]);
+    if (!key) { skipped++; continue; }
+
+    const existing = outMap.get(key);
+    if (!existing) {
+      outMap.set(key, incoming);
+      added++;
+    } else {
+      const before = snapshot(existing);
+      mergeRowInto(existing, incoming);
+      const after = snapshot(existing);
+      if (before !== after) updated++;
+    }
+  }
+
+  // Finalize lookups/defaults and normalize
+  const outArr = Array.from(outMap.values());
+  for (const row of outArr) {
+    finalizeLookups(row);
+
+    // Normalize VIN to uppercase/no spaces
+    if (!isBlank(row["VIN"])) row["VIN"] = cleanVin(row["VIN"]);
+
+    // Ensure all output fields exist
+    for (const h of C_HEADERS) row[h] = normVal(row[h]);
+  }
+
+  // Sort: keep stable-ish; optionally could sort by UPFIT LOCATION / CUSTOMERID etc
+  outArr.sort((a,b) => {
+    const av = cleanKey(a["UPFIT LOCATION"]) + " " + cleanKey(a["CUSTOMERID"]) + " " + cleanVin(a["VIN"]);
+    const bv = cleanKey(b["UPFIT LOCATION"]) + " " + cleanKey(b["CUSTOMERID"]) + " " + cleanVin(b["VIN"]);
+    return av.localeCompare(bv);
+  });
+
+  outputRows = outArr;
+  outputCsv = buildCSV(C_HEADERS, outArr);
+
+  // Update stats
+  els.outRows.textContent = `Output rows: ${outArr.length}`;
+  els.addedRows.textContent = `Added rows: ${added}`;
+  els.updatedRows.textContent = `Updated rows: ${updated}`;
+  els.skippedRows.textContent = `Skipped rows (no keys): ${skipped}`;
+
+  renderPreview(outArr);
+  els.btnDownload.disabled = !(outArr.length);
+
+  logLine(`Done. Output rows: ${outArr.length}`);
+});
+
+/* =========================
+   Download
+   ========================= */
+els.btnDownload.addEventListener("click", () => {
+  if (!outputCsv) return;
+  const blob = new Blob([outputCsv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "WorkbookC_Compiled_DATA.csv";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+/* =========================
+   Reset
+   ========================= */
+els.btnReset.addEventListener("click", () => {
+  dataA = dataB = dataC = null;
+  pkgLookup = quotesLookup = null;
+  outputCsv = "";
+  outputRows = [];
+
+  els.fileA.value = "";
+  els.fileB.value = "";
+  els.fileC.value = "";
+  els.filePkg.value = "";
+  els.fileQuotes.value = "";
+  els.defaultCustomer.value = "";
+  els.defaultColor.value = "";
+
+  els.aStatus.textContent = "A: not loaded";
+  els.bStatus.textContent = "B: not loaded";
+  els.cStatus.textContent = "C: not loaded";
+  els.pkgStatus.textContent = "Package lookup: not loaded";
+  els.quotesStatus.textContent = "Quotes: not loaded";
+
+  els.outRows.textContent = "Output rows: 0";
+  els.addedRows.textContent = "Added rows: 0";
+  els.updatedRows.textContent = "Updated rows: 0";
+  els.skippedRows.textContent = "Skipped rows (no keys): 0";
+
+  els.btnMerge.disabled = true;
+  els.btnDownload.disabled = true;
+
+  clearLog();
+  renderPreview([]);
+});
+</script>
+</body>
+</html>

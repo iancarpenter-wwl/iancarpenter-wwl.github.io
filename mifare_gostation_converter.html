@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIFARE CSN Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 { margin-top: 0; color: #2c3e50; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background-color: #2980b9; }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        th { background-color: #f8f9fa; }
+    </style>
+</head>
+<body>
+
+    <h2>MIFARE CSN Reader Converter</h2>
+    <div class="form-group">
+        <label for="inputData">Enter Decimal Number(s) (one per line or space separated):</label>
+        <textarea id="inputData" placeholder="4099566331&#10;401294527"></textarea>
+    </div>
+    <button onclick="convertCards()">Convert & Swap</button>
+
+    <table id="resultTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Input Decimal</th>
+                <th>Standard Hex</th>
+                <th>Byte-Swapped Hex</th>
+            </tr>
+        </thead>
+        <tbody id="resultBody">
+            <!-- Results injected here -->
+        </tbody>
+    </table>
+
+    <script>
+        function convertCards() {
+            const input = document.getElementById('inputData').value;
+            // Extract all numbers using regex
+            const numbers = input.match(/\d+/g);
+            const tbody = document.getElementById('resultBody');
+            const table = document.getElementById('resultTable');
+            
+            tbody.innerHTML = '';
+            
+            if (!numbers) {
+                table.style.display = 'none';
+                return;
+            }
+
+            numbers.forEach(numStr => {
+                const decNum = parseInt(numStr, 10);
+                if (isNaN(decNum)) return;
+
+                // 1. Convert to 4-byte Hex (Big Endian)
+                let hexStandard = decNum.toString(16).toUpperCase().padStart(8, '0');
+
+                // 2. Byte swap (reverse every 2 characters)
+                let bytes = [];
+                for (let i = 0; i < hexStandard.length; i += 2) {
+                    bytes.push(hexStandard.substr(i, 2));
+                }
+                let hexSwapped = bytes.reverse().join('');
+
+                // Append to table
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${decNum}</td>
+                    <td>${hexStandard}</td>
+                    <td><strong>${hexSwapped}</strong></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            table.style.display = numbers.length > 0 ? 'table' : 'none';
+        }
+    </script>
+
+</body>
+</html>
